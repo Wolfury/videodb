@@ -1,0 +1,24 @@
+{
+  "name": "videodb",
+  "version": "0.0.1",
+  "description": "Scripts for creating a database to organize the learning videos I've watched.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/leesei/videodb.git"
+  },
+  "author": {
+    "name": "KY LEE",
+    "email": "leesei@gmail.com",
+    "url": "http://leesei.github.io/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/leesei/videodb/issues"
+  },
+  "homepage": "https://github.com/leesei/videodb",
+  "dependencies": {
+    "exec-sync": "^0.1.6",
+    "lodash": "^2.4.1",
+    "nomnom": "^1.7.0"
+  }
+}

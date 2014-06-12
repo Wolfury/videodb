@@ -1,0 +1,76 @@
+#!/usr/bin/env node
+
+// this script creates a dbjson from infojson(s)
+
+var _ = require('lodash');
+var fs = require('fs');
+
+var opts = require("nomnom")
+  .script("create-dbjson")
+  .option('infojson', {
+       position: 0,
+       help: "info.json to parse",
+       list: true,
+       required: true
+  })
+  .option('output', {
+       abbr: 'o',
+       help: "output file (append if exist)",
+       default: "video.db.json"
+  })
+  .option('tags', {
+       abbr: 't',
+       help: "tags to add to dbjson",
+       list: true,
+       default: []
+  })
+  .help("Author: ".bold +
+    "leesei@gmail.com".underline + "       "+
+    "Licence: ".bold + "MIT\n")
+  .parse();
+
+function loadJson(filepath) {
+  return JSON.parse(fs.readFileSync(filepath, 'utf8'));
+}
+
+// console.log(opts);
+
+var videodb = [];
+if (fs.existsSync(opts.output)) {
+  console.error('out file exists:', opts.output);
+  return;
+
+  // append mode would require a look up of entry and merge tags
+  // videodb = loadJson(opts.output);
+  // if (!_.isArray(videodb)) {
+  //   console.error('invalid out file:', opts.output);
+  // }
+}
+
+_.forEach(opts.infojson, function (f) {
+  if (f.indexOf('.info.json') == -1) {
+    console.error('not .info.json:', f);
+    return;
+  }
+
+  var infojson = loadJson(f);
+  if (!infojson.webpage_url) {
+    console.error('old infojson:', f);
+    return;
+  }
+  videodb.push({
+    video_id: infojson.id,
+    title: infojson.title,
+    extractor: infojson.extractor,
+    duration: infojson.duration,
+    url: infojson.webpage_url,
+    uploader: infojson.uploader_id,
+    upload_date: infojson.upload_date,
+    thumbnail: infojson.thumbnail,
+    tags: opts.tags,
+    rating: null
+  });
+});
+
+console.info('writing to ' + opts.output);
+fs.writeFileSync(opts.output, JSON.stringify(videodb, null, 2));
