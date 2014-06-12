@@ -4,6 +4,7 @@
 
 var _ = require('lodash');
 var fs = require('fs');
+var util = require('./util');
 
 var opts = require("nomnom")
   .script("create-dbjson")
@@ -29,10 +30,6 @@ var opts = require("nomnom")
     "Licence: ".bold + "MIT\n")
   .parse();
 
-function loadJson(filepath) {
-  return JSON.parse(fs.readFileSync(filepath, 'utf8'));
-}
-
 // console.log(opts);
 
 var videodb = [];
@@ -53,7 +50,7 @@ _.forEach(opts.infojson, function (f) {
     return;
   }
 
-  var infojson = loadJson(f);
+  var infojson = util.loadJson(f);
   if (!infojson.webpage_url) {
     console.error('old infojson:', f);
     return;
@@ -72,5 +69,6 @@ _.forEach(opts.infojson, function (f) {
   });
 });
 
-console.info('writing to ' + opts.output);
-fs.writeFileSync(opts.output, JSON.stringify(videodb, null, 2));
+if (util.writeJson(videodb, opts.output)){
+  console.info('writing to ' + opts.output);
+}

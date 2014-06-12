@@ -51,3 +51,7 @@ videodb created by `3-create-dbjson`.
 
 - {presentor/organiztion}
 - [playlist/series/conference]
+
+## Query
+
+`dbjson` can be queryed by scripts or [json](http://trentm.com/json/) or [JSONSelect](http://jsonselect.org/#overview)

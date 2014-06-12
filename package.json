@@ -1,6 +1,6 @@
 {
   "name": "videodb",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Scripts for creating a database to organize the learning videos I've watched.",
   "repository": {
     "type": "git",

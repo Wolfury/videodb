@@ -4,14 +4,13 @@
 // requires youtube-dl.py from http://youtube-dl.org/
 
 var _ = require('lodash');
-var execSync = require("exec-sync");
-var fs = require('fs');
+var util = require('./util');
 
 var opts = require("nomnom")
   .script("update-infojson")
   .option('infojson', {
        position: 0,
-       help: "info.json to update",
+       help: "info.json(s) to update",
        list: true,
        required: true
   })
@@ -20,29 +19,17 @@ var opts = require("nomnom")
     "Licence: ".bold + "MIT\n")
   .parse();
 
-function loadJson(filepath) {
-  return JSON.parse(fs.readFileSync(filepath, 'utf8'));
-}
-
-function sourceToUrl(source) {
-  if (source.extractor == 'youtube') {
-    return 'https://www.youtube.com/watch?v='+source.id;
-  }
-  else if (source.extractor == 'vimeo') {
-    return 'https://www.vimeo.com/'+source.id;
-  }
-  else {
-    return '';
-  }
-}
-
 // console.log(opts);
 
 var failedEntries = [];
 _.forEach(opts.infojson, function (f) {
   // console.log(f);
-  var infojson = loadJson(f);
-  var url = sourceToUrl(infojson);
+  var infojson = util.loadJson(f);
+  var source = {
+    extractor: infojson.extractor,
+    video_id: infojson.id
+  };
+  var url = util.sourceToUrl(source);
 
   if (!url){
     console.error('error parsing', f);
@@ -50,20 +37,14 @@ _.forEach(opts.infojson, function (f) {
   }
 
   console.log('downloading info.json: ' + url);
-  try {
-    // execSync("youtube-dl.py --skip-download --write-info-json -o '" + f.replace('.info.json', '') + "' " + url);
-    execSync("youtube-dl.py --skip-download --write-info-json -o '%(autonumber)s-[%(title)s]-[%(id)s].%(ext)s' " + url);
-  }
-  catch (e){
+  if (!util.downloadInfoJson(url)) {
     console.error('error downloading', url);
-    console.error(e);
-    failedEntries.push(f);
+    failedEntries.push(url);
     return;
   }
 });
 
 var failOutfile = '2-failedEntries.json';
-if (failedEntries.length !== 0) {
+if (util.writeJson(failedEntries, failOutfile)) {
   console.error('failed on some entries, see ' + failOutfile);
-  fs.writeFileSync(failOutfile, JSON.stringify(failedEntries, null, 2));
 }

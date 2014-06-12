@@ -4,8 +4,7 @@
 // requires youtube-dl.py from http://youtube-dl.org/
 
 var _ = require('lodash');
-var execSync = require("exec-sync");
-var fs = require('fs');
+var util = require('./util');
 
 var opts = require("nomnom")
   .script("infojson-from-videodb")
@@ -20,36 +19,13 @@ var opts = require("nomnom")
     "Licence: ".bold + "MIT\n")
   .parse();
 
-function loadJson(filepath) {
-  return JSON.parse(fs.readFileSync(filepath, 'utf8'));
-}
-
-// parse { extractor, id } out of key from old dbjson
-function getVideoSource(key) {
-  var re = /\('(.+)',\s*'(.+)'\)/;
-  var match = key.match(re);
-  // console.log(match[1], match[2]);
-  return (match)? {
-    extractor: match[1],
-    video_id: match[2]
-  } : null;
-}
-
 // console.log(opts);
 
 var failedEntries = {};
-_.forOwn(loadJson(opts.videodb), function(val, key) {
+_.forOwn(util.loadJson(opts.videodb), function(val, key) {
   // console.log(key);
-  var url = '';
-  var source = getVideoSource(key);
-  if (source) {
-    if (source.extractor == 'youtube') {
-      url = 'https://www.youtube.com/watch?v='+source.video_id;
-    }
-    else if (source.extractor == 'vimeo') {
-      url = 'https://www.vimeo.com/'+source.video_id;
-    }
-  }
+  var source = util.getVideoSource(key);
+  var url = util.sourceToUrl(source);
 
   if (!url){
     console.error('unknown source', key);
@@ -58,19 +34,14 @@ _.forOwn(loadJson(opts.videodb), function(val, key) {
   }
 
   console.log('downloading info.json: ' + url);
-  try {
-    execSync("youtube-dl.py --skip-download --write-info-json -o '%(autonumber)s-[%(title)s]-[%(id)s].%(ext)s' " + url);
-  }
-  catch (e){
+  if (!util.downloadInfoJson(url)) {
     console.error('error downloading', key);
-    console.error(e);
     failedEntries[key] = val;
     return;
   }
 });
 
 var failOutfile = '1-failedEntries.json';
-if (Object.keys(failedEntries).length !== 0) {
+if (util.writeJson(failedEntries, failOutfile)) {
   console.error('failed on some entries, see ' + failOutfile);
-  fs.writeFileSync(failOutfile, JSON.stringify(failedEntries, null, 2));
 }
