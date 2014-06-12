@@ -1,6 +1,6 @@
 ## videodb
 
-Scripts for creating a database to organize the learning video I've watched.
+Scripts for creating a database to organize the learning video I've watched.  
 These scripts requires latest `youtube-dl.py` from http://youtube-dl.org/.
 
 ## History
@@ -31,7 +31,7 @@ videodb created by `3-create-dbjson`.
 
 > corresponding fields in info.json in brackets
 
-```json
+```
 {
     [_id]
     video_id (id)
