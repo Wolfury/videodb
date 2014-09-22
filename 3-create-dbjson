@@ -25,12 +25,29 @@ var opts = require("nomnom")
        list: true,
        default: []
   })
+  .option('use-infojson-name', {
+       abbr: 'i',
+       help: "use infojson name as default, overrides '-o' (applicable for single file only)",
+       flag: true,
+       default: false
+  })
   .help("Author: ".bold +
     "leesei@gmail.com".underline + "       "+
     "Licence: ".bold + "MIT\n")
   .parse();
 
 // console.log(opts);
+
+if (opts['use-infojson-name']) {
+  if (opts.infojson.length === 1) {
+    opts.output = opts.infojson[0].replace(/info.json$/, 'db.json');
+  }
+  else {
+    console.error('more than one file, not using infojson name');
+  }
+  // console.log(opts.output);
+  // return;
+}
 
 var videodb = [];
 if (fs.existsSync(opts.output)) {
@@ -55,6 +72,7 @@ _.forEach(opts.infojson, function (f) {
     console.error('old infojson:', f);
     return;
   }
+  var tags = _.union(opts.tags, infojson.tags);
   videodb.push({
     video_id: infojson.id,
     title: infojson.title,
@@ -64,8 +82,8 @@ _.forEach(opts.infojson, function (f) {
     uploader: infojson.uploader_id,
     upload_date: infojson.upload_date,
     thumbnail: infojson.thumbnail,
-    tags: opts.tags,
-    rating: null
+    tags: tags,
+    rating: infojson.rating
   });
 });
 
